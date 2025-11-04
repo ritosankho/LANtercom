@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+<textarea id="chat" rows="20" cols="50" readonly></textarea><br>
+<input id="msg" placeholder="Type message...">
+
+<script>
+let ws = new WebSocket("ws://localhost:8765");
+
+ws.onmessage = e => {
+    chat.value += e.data + "\n";
+};
+
+msg.onkeydown = e => {
+    if (e.key === "Enter") {
+        ws.send(msg.value);
+        msg.value = "";
+    }
+};
+</script>
+</body>
+</html>
