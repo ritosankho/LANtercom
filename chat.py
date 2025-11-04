@@ -1,7 +1,7 @@
 import asyncio
 import websockets
 
-def start_chat_server(host="localhost", port=8765):
+def start_chat_server(host="0.0.0.0", port=8765):
     clients = {}   # maps websocket -> nickname
 
     async def handler(ws):
