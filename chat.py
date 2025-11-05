@@ -5,17 +5,46 @@ class chatServer:
     def __init__(self, host, port):
         self.host = host
         self.port = port
+
+        # All connected clients: { websocket : nickname }
         self.clients = {}
-    def start(self):
-           # Empty dictionary to store nickname info
 
-        async def handler(ws):
-            await ws.send("Enter your nickname for this chat:")  # Ask for nickname (Asyncronous function)
+    # ------------------------------
+    # ---- Helper functionality ----
+    # ------------------------------
 
-            
-            nickname = await ws.recv()        # Receive nickname (Async function)
-            self.clients[ws] = nickname
-            print(f"{nickname} connected")
+    async def broadcast(self, msg, exclude=None):
+        """Send a message to all clients, optionally excluding someone."""
+        targets = [ws for ws in self.clients if ws != exclude]
+        if targets:
+            await asyncio.gather(*[ws.send(msg) for ws in targets])
+
+    async def handle_join(self, ws, nickname):
+        """Announce that someone joined."""
+        join_msg = f"{nickname} has joined the chat!"
+        print(join_msg)
+        await self.broadcast(join_msg)
+
+    async def handle_leave(self, ws):
+        """Announce that someone left."""
+        nickname = self.clients.get(ws)
+        leave_msg = f"{nickname} has left the chat."
+        print(leave_msg)
+        del self.clients[ws]
+        await self.broadcast(leave_msg)
+
+    # ------------------------------
+    # --------- Main handler -------
+    # ------------------------------
+
+    async def handler(self, ws):
+        # Ask nickname
+        await ws.send("Enter your nickname:")
+        nickname = await ws.recv()
+
+        # Save client
+        self.clients[ws] = nickname
+        print(f"{nickname} connected")
 
         # Notify others
         await self.handle_join(ws, nickname)
