@@ -17,36 +17,25 @@ class chatServer:
             self.clients[ws] = nickname
             print(f"{nickname} connected")
 
-        
-            join_msg = f"{nickname} has joined the chat!"      # Announce join
-            await asyncio.gather(*[
-                c.send(join_msg) for c in self.clientslients
-            ])
+        # Notify others
+        await self.handle_join(ws, nickname)
 
-            try:
-                async for msg in ws:
-                    full_msg = f"{nickname}: {msg}"
-                    print(full_msg)
+        try:
+            async for msg in ws:
+                full = f"{nickname}: {msg}"
+                print(full)
+                await self.broadcast(full)
+        finally:
+            await self.handle_leave(ws)
 
-                    
-                    await asyncio.gather(*[
-                        c.send(full_msg) for c in self.clients     # Brodcast to everyone 
-                    ])
-            finally:
-                leave_msg = f"{clients[ws]} has left the chat."        #Leaving chat
-                print(leave_msg)
+    # ------------------------------
+    # --------- Start server -------
+    # ------------------------------
 
-                del clients[ws]
+    async def main_async(self):
+        async with websockets.serve(self.handler, self.host, self.port):
+            print(f"Chat server running at ws://{self.host}:{self.port}")
+            await asyncio.Future()  # Run forever
 
-                await asyncio.gather(*[
-                    c.send(leave_msg) for c in self.clients
-                ])
-
-        async def main_async():
-            async with websockets.serve(handler, self.host, self.port):
-                print(f"WebSocket server running at ws://{self.host}:{self.port}")
-                await asyncio.Future()
-
-        asyncio.run(main_async())
-
-
+    def start(self):
+        asyncio.run(self.main_async())
