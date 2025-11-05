@@ -1,18 +1,15 @@
-import asyncio
-import websockets
-from flask import Flask, redirect, url_for, request, render_template
-from chat import start_chat_server
 import multiprocessing
-
 from flaskapp import app
-from chat import start_chat_server
+from chat import chatServer
+
+server = chatServer("0.0.0.0", 8765)
 
 def run_flask():
     app.run(host="0.0.0.0", port=5000)
 
 if __name__ == "__main__":
     runFlask = multiprocessing.Process(target = run_flask)
-    runChat = multiprocessing.Process(target = start_chat_server)
+    runChat = multiprocessing.Process(target = server.start)
     runFlask.start()
     runChat.start()
     runFlask.join()

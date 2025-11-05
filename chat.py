@@ -1,51 +1,52 @@
 import asyncio
 import websockets
 
-def start_chat_server(host="0.0.0.0", port=8765):
-    clients = {}   # maps websocket -> nickname
+class chatServer:
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        self.clients = {}
+    def start(self):
+           # Empty dictionary to store nickname info
 
-    async def handler(ws):
-        # Ask for nickname
-        await ws.send("Enter your nickname for this chat:")
+        async def handler(ws):
+            await ws.send("Enter your nickname for this chat:")  # Ask for nickname (Asyncronous function)
 
-        # Receive nickname
-        nickname = await ws.recv()
-        clients[ws] = nickname
-        print(f"{nickname} connected")
+            
+            nickname = await ws.recv()        # Receive nickname (Async function)
+            self.clients[ws] = nickname
+            print(f"{nickname} connected")
 
-        # Announce join
-        join_msg = f"{nickname} has joined the chat!"
-        await asyncio.gather(*[
-            c.send(join_msg) for c in clients
-        ])
-
-        try:
-            async for msg in ws:
-                full_msg = f"{nickname}: {msg}"
-                print(full_msg)
-
-                # Broadcast to everyone else
-                await asyncio.gather(*[
-                    c.send(full_msg) for c in clients
-                ])
-        finally:
-            leave_msg = f"{clients[ws]} has left the chat."
-            print(leave_msg)
-
-            del clients[ws]
-
+        
+            join_msg = f"{nickname} has joined the chat!"      # Announce join
             await asyncio.gather(*[
-                c.send(leave_msg) for c in clients
+                c.send(join_msg) for c in self.clientslients
             ])
 
-    async def main_async():
-        async with websockets.serve(handler, host, port):
-            print(f"WebSocket server running at ws://{host}:{port}")
-            await asyncio.Future()
+            try:
+                async for msg in ws:
+                    full_msg = f"{nickname}: {msg}"
+                    print(full_msg)
 
-    asyncio.run(main_async())
+                    
+                    await asyncio.gather(*[
+                        c.send(full_msg) for c in self.clients     # Brodcast to everyone 
+                    ])
+            finally:
+                leave_msg = f"{clients[ws]} has left the chat."        #Leaving chat
+                print(leave_msg)
+
+                del clients[ws]
+
+                await asyncio.gather(*[
+                    c.send(leave_msg) for c in self.clients
+                ])
+
+        async def main_async():
+            async with websockets.serve(handler, self.host, self.port):
+                print(f"WebSocket server running at ws://{self.host}:{self.port}")
+                await asyncio.Future()
+
+        asyncio.run(main_async())
 
 
-if __name__ == "__main__":
-    #app.run(debug=True)
-    start_chat_server()
