@@ -1,22 +1,33 @@
 <!DOCTYPE html>
 <html>
 <body>
-<textarea id="chat" rows="20" cols="50" readonly></textarea><br>
-<input id="msg" placeholder="Type message...">
+    <p>Enter the IP address</p>
+    
+    <input type = "text" id = "ip">
+    <Button type = "submit" onclick = "websocketChat()">Connect</Button>
+    <br>
+    <br>
+    <textarea id="chat" rows="40" cols="180" readonly></textarea>
+    <br>
+    <input id="msg" placeholder="Type message...">
 
-<script>
-let ws = new WebSocket("ws://192.168.1.8:8765");
+    <script>
+        function websocketChat(){
+            const ipBox = document.getElementById("ip");
+            const ipAddress = ipBox.value.trim()
+            let ws = new WebSocket("ws://" + ipAddress  + ":8765");
 
-ws.onmessage = e => {
-    chat.value += e.data + "\n";
-};
+            ws.onmessage = e => {
+                chat.value += e.data + "\n";
+            };
 
-msg.onkeydown = e => {
-    if (e.key === "Enter") {
-        ws.send(msg.value);
-        msg.value = "";
-    }
-};
-</script>
+            msg.onkeydown = e => {
+                if (e.key === "Enter") {
+                    ws.send(msg.value);
+                    msg.value = "";
+                }
+            };
+        };
+    </script>
 </body>
 </html>
